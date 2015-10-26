@@ -1,0 +1,15 @@
+{
+  "name": "gameserver",
+  "description": "A generic gameserver implemented with websockets",
+  "author": "Petri Savolainen <petri.savolainen@hiit.fi>",
+	"version": "1.0.0",
+	"repository" :
+	  { "type" : "git",
+	    "url" : "https://github.com/ptesavol/gameserver.git"
+	  },
+  "dependencies": {
+    "winston": "0.8.x",
+    "websocket": "1.x.x"
+  },
+  "engine": "node >= 0.8.0"
+}

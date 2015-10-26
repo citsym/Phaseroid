@@ -1,0 +1,1 @@
+../spaceifyapplication/rpccommunicator.js
