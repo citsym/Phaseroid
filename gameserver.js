@@ -41,6 +41,11 @@ self.start = function()
 	spaceify.getProvidedService("spaceify.org/services/gamescreen").exposeRpcMethod("callScreenRpc", self, self.callScreenRpc);
 	spaceify.getProvidedService("spaceify.org/services/gamescreen").exposeRpcMethod("callClientRpc", self, self.callClientRpc);	
 	
+	/*
+	spaceify.getProvidedService("spaceify.org/services/gameclient").exposeRpcMethod("callServerRpc", self, self.callServerRpc);		
+	spaceify.getProvidedService("spaceify.org/services/gamescreen").exposeRpcMethod("callServerRpc", self, self.callServerRpc);
+	*/
+	
 	spaceify.getProvidedService("spaceify.org/services/gameclient").setConnectionListener(self, self.onClientConnected);
 	spaceify.getProvidedService("spaceify.org/services/gameclient").setDisconnectionListener(self, self.onClientDisconnected);
 	
@@ -85,7 +90,20 @@ self.callClientRpc = function(clientId, methodName, params, connectionId, callba
 		clients.callRpc(methodName, params, self, callback, clientId);
 		}
 	};	
+	
+/*
+self.callServerRpc = function(clientId, methodName, params, connectionId, callback)
+	{
+	console.log("GameServer::callServerRpc() called");
+	console.log(methodName);
+	console.log(params);
+		
+	
+	};
+
 }
+*/
+
 
 
 var gameServer = new GameServer();

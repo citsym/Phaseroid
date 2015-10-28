@@ -86,7 +86,7 @@ self.listen = function(opts, callback)
 			autoAcceptConnections: false,
 
 			keepalive: true,							// Keepalive connections and
-			keepaliveInterval: 60000,					// ping them once a minute and
+			keepaliveInterval: 1000,					// ping them once a minute and
 			dropConnectionOnKeepaliveTimeout: true,		// drop a connection if there's no answer
 			keepaliveGracePeriod: 10000					// within the grace period.
 			});

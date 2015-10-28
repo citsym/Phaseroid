@@ -50,12 +50,16 @@ var game_state = {};
 game_state.main = function() { };  
 game_state.main.prototype = new function(){
     
-     var self = this;
+    var self = this;
     var cursors, player, emitter, enemies, box, collectables, pointer;
     var players = {};
     var playerGroup;
     
+    var debugPlayer;
+    
     self.bullets;
+    
+    var well;
     
     var filter, sprite;
 
@@ -72,13 +76,16 @@ game_state.main.prototype = new function(){
 			//Note the port, it is one bigger for the screens!
 				
 			gameClient.connect("phaser-citsym.c9.io", 8082, id, self.clientConnected);	
+			
+			
+	    
          
     };
     
    
     this.create = function() { 
         
-         game.stage.disableVisibilityChange = true;
+        game.stage.disableVisibilityChange = true;
          
          
         
@@ -92,6 +99,9 @@ game_state.main.prototype = new function(){
         sprite.filters = [ filter ];
         
     	game.physics.startSystem(Phaser.Physics.ARCADE);
+    	
+    	//game.physics.startSystem(Phaser.Physics.P2JS);
+    	//game.physics.p2.defaultRestitution = 0.8;
     	
         //this.hello_sprite = game.add.sprite(250, 300, 'hello');
        
@@ -137,6 +147,7 @@ game_state.main.prototype = new function(){
         
        // box  = game.add.sprite(200, 200, bmd2);
         
+        
 
         //game.physics.arcade.enable(box);
         //box.body.immovable      = true;
@@ -179,6 +190,14 @@ game_state.main.prototype = new function(){
         
         pointer =  game.add.sprite(game.width/2, game.height/2, 'star');
         pointer.anchor.setTo(0.5, 0.5);
+        
+        var color = 'rgba(0,255, 0, 0.3)';
+        var radius = 80;
+        var circleBmd = this.game.make.bitmapData(radius*2, radius*2);
+        circleBmd.circle(circleBmd.width/2, circleBmd.height/2, radius, color);
+        well  = game.add.sprite(100,100, circleBmd);
+        well.anchor.setTo(0.5, 0.5);
+        game.physics.arcade.enable(well);
         
     };
     
@@ -231,8 +250,16 @@ game_state.main.prototype = new function(){
         //filter.update(player);
         
         filter.update(playerGroup);
+        
+        //playerGroup.body.gravity = new Phaser.Point();
+        playerGroup.setAll('body.gravity', new Phaser.Point());
+        
+        game.physics.arcade.overlap(playerGroup, well, gravity, null, this);
+        
        
         game.physics.arcade.overlap(playerGroup, collectables, collisionHandler, null, this);
+        
+         game.physics.arcade.overlap(playerGroup, enemies, enemyCollisionHandler, null, this);
         
         game.physics.arcade.overlap(self.bullets, enemies, collisionHandler, null, this);
         
@@ -241,42 +268,64 @@ game_state.main.prototype = new function(){
         self.bullets.forEachExists(function(b){
             game.world.wrap(b, 0, true);
         });
-        /*
-        if (cursors.up.isDown)
-        {
-            game.physics.arcade.accelerationFromRotation(
-                player.rotation, 200, player.body.acceleration);
-                
-                emitter.emitParticle();
-        }
-        else
-        {
-            player.body.acceleration.set(0);
-        }
-    
-        if (cursors.left.isDown)
-        {
-            player.body.angularVelocity = -300;
-        }
-        else if (cursors.right.isDown)
-        {
-            player.body.angularVelocity = 300;
-        }
-        else
-        {
-            player.body.angularVelocity = 0;
+       
+        if(debugPlayer != undefined){
+            var input = {X:0, Y:0, button1:false, button2:false};
+            
+            if (cursors.up.isDown)
+            {
+               
+                    input.Y = -1;
+            }
+            else
+            {
+               
+                input.Y = 0;
+            }
+        
+            if (cursors.left.isDown)
+            {
+               input.X = -1;
+            }
+            else if (cursors.right.isDown)
+            {
+                input.X = 1;
+            }
+            
+            
+           if (game.input.keyboard.isDown(Phaser.Keyboard.SPACEBAR))
+            {
+                input.button1 = true;
+            }
+            
+            debugPlayer.setInput(input);
         }
         
-       if (game.input.keyboard.isDown(Phaser.Keyboard.SPACEBAR))
-        {
-            //fireBullet();
-        }
         
-        */
-        
+        var nKey = game.input.keyboard.addKey(Phaser.Keyboard.N);
+        nKey.onDown.add(addDebugPlayer, this);
+
+ 
        // game.world.wrap(player, 0, true);
 
     };
+    
+    this.render = function() {
+
+        if(debugPlayer != undefined)
+        game.debug.body(debugPlayer);
+
+    }
+    
+    var addDebugPlayer = function()
+    {
+        if(debugPlayer == undefined){
+        
+            debugPlayer = new Player(game, game.world.width/2, game.world.height/2);
+    		
+    		playerGroup.add(debugPlayer);
+        }
+    }
     
     function drawBox(){
         
@@ -286,6 +335,23 @@ game_state.main.prototype = new function(){
         box.kill();
     };
     
+    var enemyCollisionHandler = function(player, enemy){
+        player.damage(5);
+        enemy.kill();
+    };
+    
+    var gravity = function(well, player){
+        
+       //game.physics.arcade.accelerateToObject(well, player, 50, 100, 100);
+       
+       //player.body.velocity -= Phaser.Point.subtract(well.body.position, player.body.position).setMagnitude(.001);
+       //Phaser.Point.subtract(well.body.position, player.body.position);
+       
+       player.body.gravity = new Phaser.Point(well.body.x - player.body.x, well.body.y - player.body.y);
+    // Normalize and multiply by actual strength of gravity desired
+        player.body.gravity = player.body.gravity.normalize().multiply(300, 300);
+       
+    };
    
 			
 	self.sayHi = function(message)
@@ -330,6 +396,7 @@ game_state.main.prototype = new function(){
 		{
 		console.log("OwnScreen::onScreenConnected() "+id);
 		console.log("Currently connected screens: " + gameClient.getConnectedScreenIds());
+		//gameClient.callServerRpc(1, "method", ["hello server"],  self, null);
 		};
 	
 	self.onScreenDisconnected = function(id)
