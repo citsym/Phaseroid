@@ -20,7 +20,6 @@ controller_state.main.prototype = new function(){
     var button1 = false;
     var button2 = false;
     
-    var alpha, beta, gamma;
    
     self.preload = function() {
         id = getGetParameter("id");
@@ -29,32 +28,11 @@ controller_state.main.prototype = new function(){
 				
 		gameClient.connect("localhost", 8081, id, self.clientConnected);
 		
-	
-	
-        window.addEventListener('deviceorientation', deviceOrientationHandler, false);
-       
-		
     }
     
-    var deviceOrientationHandler = function(eventData){
-        //orientation = eventData;
-        
-        //console.log(eventData);
-        
-        //console.log();
-        
-        alpha = eventData.alpha;
-        beta = eventData.beta;
-        gamma = eventData.gamma;
-      
-      
-    }
+    
     
     self.render = function() {
-    
-        //if(orientation != undefined)
-         //   game.debug.text( orientation.alpha, game.world.height/2, game.world.height/2 );
-    
     
     }
     
@@ -64,7 +42,6 @@ controller_state.main.prototype = new function(){
 
         // Stretch to fill
         game.scale.fullScreenScaleMode = Phaser.ScaleManager.EXACT_FIT;
-        //Phaser.StageScaleMode.EXACT_FIT = 0;
         game.stage.disableVisibilityChange = true;
         
         var radius = 80;
@@ -72,9 +49,7 @@ controller_state.main.prototype = new function(){
         this.joystick = this.game.plugins.add(new Phaser.Plugin.VirtualJoystick(this));
         this.joystick.init(game.world.width/4, game.world.height - game.world.height/2,  radius*2, radius/3*4);
         this.joystick.start();
-        //this.joystick.setVelocity(player, minSpeed, maxSpeed) {
         
-       
         var color = 'rgba(255, 0, 0, 0.5)';
         var buttonBmd = this.game.make.bitmapData(radius*2, radius*2);
 
@@ -118,12 +93,9 @@ controller_state.main.prototype = new function(){
         
         gameClient.callScreenRpc(1, "setPlayerInput", [id, input],  self, null);
         
-        
-        if(alpha != undefined)
-            gameClient.callScreenRpc(1, "setOrientation", [alpha, beta, gamma],  self, null);
     }
     
-			
+	//Communication framework example functions
 	self.setStickPosition = function(position)
 		{
 		console.log("DemoController::setStickPosition() "+position);

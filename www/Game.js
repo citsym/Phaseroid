@@ -36,11 +36,8 @@ var fragmentSrc = [
         "}"
     ];
 
-//var Player = require("prefabs/player");
-
-
-var gameWidth = 500;
-var gameHeight = 500;
+var gameWidth = 1024;
+var gameHeight = 1024;
 
 
 var game = new Phaser.Game(gameWidth, gameHeight, Phaser.AUTO, 'game_div');
@@ -51,23 +48,26 @@ game_state.main = function() { };
 game_state.main.prototype = new function(){
     
     var self = this;
-    var cursors, player, emitter, enemies, box, collectables, pointer;
+    var cursors, player, emitter, enemies, box, collectables;
     var players = {};
     var playerGroup;
     
     var debugPlayer;
     
     self.bullets;
-    
-    var well;
-    
+     
     var filter, sprite;
+
+    const objectSize = 64;
+    const glowSize = 8;
+    const numberOfEnemies = 8;
+    const numberOfCollectables = 16;
 
     this.preload = function() {
 		// Function called first to load all the assets
         game.load.image('hello', 'assets/Phaser-Logo-Small.png');
-         game.load.image('player', 'assets/diamond.png');
-         game.load.image('star', 'assets/star.png');
+        game.load.image('player', 'assets/diamond.png');
+        game.load.image('star', 'assets/star.png');
          
         var id = getGetParameter("id");
 			if (!id)
@@ -100,14 +100,28 @@ game_state.main.prototype = new function(){
         
     	game.physics.startSystem(Phaser.Physics.ARCADE);
     	
-    	//game.physics.startSystem(Phaser.Physics.P2JS);
-    	//game.physics.p2.defaultRestitution = 0.8;
-    	
-        //this.hello_sprite = game.add.sprite(250, 300, 'hello');
+        cursors = game.input.keyboard.createCursorKeys();
        
-       // this.player = game.add.sprite(250, 300, 'hello');
-       cursors = game.input.keyboard.createCursorKeys();
-       
+        playerGroup = game.add.group();
+
+        createEnemies();
+        createCollectables();
+
+        self.bullets = game.add.group();
+        self.bullets.enableBody = true;
+        self.bullets.physicsBodyType = Phaser.Physics.ARCADE;
+    
+    
+        var color = 'rgba(255, 0, 0, 1)';
+        var bulletBmd = this.game.make.bitmapData(16, 16);
+        bulletBmd.circle(bulletBmd.width/2, bulletBmd.height/2, 8, color);
+        //  All 40 of them
+        self.bullets.createMultiple(40, bulletBmd);
+        self.bullets.setAll('anchor.x', 0.5);
+        self.bullets.setAll('anchor.y', 0.5);
+
+        /*
+        
         var bmd = game.add.bitmapData(32,32);
 
         bmd.ctx.beginPath();
@@ -115,18 +129,16 @@ game_state.main.prototype = new function(){
         bmd.ctx.fillStyle = '#ff0000';
         bmd.ctx.fill();
         
-         var bmd2 = game.add.bitmapData(32,32);
+        var bmd2 = game.add.bitmapData(32,32);
 
-        // draw to the canvas context like normal
-        ///bmd.ctx.lineWidth = 2;
         bmd2.ctx.beginPath();
         bmd2.ctx.rect(0,0,32,32);
         bmd2.ctx.fillStyle = '#0000ff';
         bmd2.ctx.fill();
     
         // use the bitmap data as the texture for the sprite
-        //var box  = game.add.sprite(200, 200, bmd);
-        playerGroup = game.add.group();
+        
+        
         
         enemies = game.add.group();
         enemies.physicsBodyType = Phaser.Physics.ARCADE;
@@ -141,17 +153,11 @@ game_state.main.prototype = new function(){
         var bulletBmd = this.game.make.bitmapData(16, 16);
         bulletBmd.circle(bulletBmd.width/2, bulletBmd.height/2, 8, color);
         //  All 40 of them
-         self.bullets.createMultiple(40, bulletBmd);
-         self.bullets.setAll('anchor.x', 0.5);
-         self.bullets.setAll('anchor.y', 0.5);
+        self.bullets.createMultiple(40, bulletBmd);
+        self.bullets.setAll('anchor.x', 0.5);
+        self.bullets.setAll('anchor.y', 0.5);
         
-       // box  = game.add.sprite(200, 200, bmd2);
-        
-        
-
-        //game.physics.arcade.enable(box);
-        //box.body.immovable      = true;
-
+ 
         for (var i = 0; i < 8; i++)
         {
             //  This creates a new Phaser.Sprite instance within the group
@@ -187,10 +193,9 @@ game_state.main.prototype = new function(){
             tween.yoyo(true, 1000);
         });
         
+        */
         
-        pointer =  game.add.sprite(game.width/2, game.height/2, 'star');
-        pointer.anchor.setTo(0.5, 0.5);
-        
+        /*
         var color = 'rgba(0,255, 0, 0.3)';
         var radius = 80;
         var circleBmd = this.game.make.bitmapData(radius*2, radius*2);
@@ -198,43 +203,102 @@ game_state.main.prototype = new function(){
         well  = game.add.sprite(100,100, circleBmd);
         well.anchor.setTo(0.5, 0.5);
         game.physics.arcade.enable(well);
+        */
+        
+    };
+
+    var createEnemies = function(){
+        
+        enemies = game.add.group();
+        enemies.physicsBodyType = Phaser.Physics.ARCADE;
+        enemies.enableBody = true;
+  
+        var bmd = game.add.bitmapData(objectSize,objectSize);
+        
+        bmd.ctx.lineWidth="4";
+        bmd.ctx.strokeStyle='#ff0000';
+
+        bmd.ctx.beginPath();
+        bmd.ctx.rect(glowSize,glowSize,objectSize-glowSize*2,objectSize-glowSize*2);
+        bmd.ctx.fillStyle = '#ff0000';
+        //bmd.ctx.fill();
+        bmd.ctx.stroke();
+        
+        for (var i = 0; i < numberOfEnemies; i++)
+        {
+            //  This creates a new Phaser.Sprite instance within the group
+            //  It will be randomly placed within the world and use the 'baddie' image to display
+            var enemy =enemies.create(Math.random() * game.width,  Math.random() * game.height, bmd);
+            
+            enemy.filters = [ game.add.filter('Glow') ];
+            
+            var tween = game.add.tween(enemy).to( { angle: 360 }, 4000, "Linear", true, 0, -1);
+            
+        }
+        
+        enemies.setAll('anchor.x', 0.5);
+        enemies.setAll('anchor.y', 0.5);
+    };
+    
+    var createCollectables = function(){
+        
+        collectables = game.add.group();
+        collectables.physicsBodyType = Phaser.Physics.ARCADE;
+        collectables.enableBody = true;
+        
+         var bmd2 = game.add.bitmapData(objectSize,objectSize);
+
+        // draw to the canvas context like normal
+        ///bmd.ctx.lineWidth = 2;
+        bmd2.ctx.beginPath();
+        bmd2.ctx.rect(glowSize,glowSize,objectSize-glowSize*2,objectSize-glowSize*2);
+        bmd2.ctx.fillStyle = '#00ff00';
+        bmd2.ctx.fill();
+
+        for (var i = 0; i < numberOfCollectables; i++)
+        {
+            //  This creates a new Phaser.Sprite instance within the group
+            //  It will be randomly placed within the world and use the 'baddie' image to display
+            var collect = collectables.create(Math.random() * game.width,  Math.random() * game.height, bmd2);
+            collect.filters = [ game.add.filter('Glow') ];
+            
+        }
+        
+        collectables.setAll('anchor.x', 0.5);
+        collectables.setAll('anchor.y', 0.5);
+
+        collectables.forEach(function(c){
+            var tween = game.add.tween(c.scale).to( { x: .5, y:.5 }, 1000, "Linear", true, 0, -1);
+
+        //  And this tells it to yoyo, i.e. fade back to zero again before repeating.
+        //  The 3000 tells it to wait for 3 seconds before starting the fade back.
+            tween.yoyo(true, 1000);
+        });
         
     };
     
+    var reset = function(){
+        
+        
+        collectables.forEach(function(c){
+            c.revive();
+            c.position.x = Math.random() * game.width;  
+            c.position.y = Math.random() * game.height;
+        });
+        
+        enemies.forEachDead(function(e){
+            e.revive();
+            e.position.x = Math.random() * game.width;  
+            e.position.y = Math.random() * game.height;
+        });
+        
+    }
+
     self.getEnemies = function(){
         return enemies;
     }
     
-    self.setOrientation = function(alpha, beta, gamma){
-        
-        var x = beta;  // In degree in the range [-180,180]
-        var y = gamma; // In degree in the range [-90,90]
-        
-        // Because we don't want to have the device upside down
-        // We constrain the x value to the range [-90,90]
-        if (x >  90) { x =  90};
-        if (x < -90) { x = -90};
-        
-        // To make computation easier we shift the range of 
-        // x and y to [0,180]
-        x += 90;
-        y += 90;
-        
-        // 10 is half the size of the ball
-        // It center the positioning point to the center of the ball
-        //ball.style.top  = (maxX*x/180 - 10) + "px";
-        //ball.style.left = (maxY*y/180 - 10) + "px";
-            
-        pointer.x = game.width*x/180;
-        
-        pointer.y = game.height*y/180;
-        
-        console.log(alpha + " "+beta +" " +gamma);
-        
-        //console.log(event);
-    }
-    
-    
+
     self.setPlayerInput = function(id, input) {
         players[id].setInput(input);
         //console.log(input);
@@ -242,21 +306,16 @@ game_state.main.prototype = new function(){
     
     this.update = function() {
 		// Function called 60 times per second
+      
+
+        if(collectables.countLiving() == 0)
+            reset();
        
-        enemies.forEach(function(e){
-            e.angle += 2;
-        });
-       
-        //filter.update(player);
-        
+         
         filter.update(playerGroup);
         
-        //playerGroup.body.gravity = new Phaser.Point();
         playerGroup.setAll('body.gravity', new Phaser.Point());
         
-        game.physics.arcade.overlap(playerGroup, well, gravity, null, this);
-        
-       
         game.physics.arcade.overlap(playerGroup, collectables, collisionHandler, null, this);
         
          game.physics.arcade.overlap(playerGroup, enemies, enemyCollisionHandler, null, this);
@@ -275,7 +334,7 @@ game_state.main.prototype = new function(){
             if (cursors.up.isDown)
             {
                
-                    input.Y = -1;
+                input.Y = -1;
             }
             else
             {
@@ -306,14 +365,13 @@ game_state.main.prototype = new function(){
         nKey.onDown.add(addDebugPlayer, this);
 
  
-       // game.world.wrap(player, 0, true);
 
     };
     
     this.render = function() {
 
         if(debugPlayer != undefined)
-        game.debug.body(debugPlayer);
+            game.debug.body(debugPlayer);
 
     }
     
@@ -327,10 +385,7 @@ game_state.main.prototype = new function(){
         }
     }
     
-    function drawBox(){
-        
-    };
-
+    
     var collisionHandler = function(player, box){
         box.kill();
     };
@@ -340,20 +395,7 @@ game_state.main.prototype = new function(){
         enemy.kill();
     };
     
-    var gravity = function(well, player){
-        
-       //game.physics.arcade.accelerateToObject(well, player, 50, 100, 100);
-       
-       //player.body.velocity -= Phaser.Point.subtract(well.body.position, player.body.position).setMagnitude(.001);
-       //Phaser.Point.subtract(well.body.position, player.body.position);
-       
-       player.body.gravity = new Phaser.Point(well.body.x - player.body.x, well.body.y - player.body.y);
-    // Normalize and multiply by actual strength of gravity desired
-        player.body.gravity = player.body.gravity.normalize().multiply(300, 300);
-       
-    };
-   
-			
+   		
 	self.sayHi = function(message)
 		{
 		alert(message);
