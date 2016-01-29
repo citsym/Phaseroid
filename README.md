@@ -10,9 +10,11 @@ Prequisities
 Installing
 ----------
 Checkout the code from Github:
+
         git clone https://github.com/citsym/Phaseroid
 
 Install dependencies with npm
+
         cd Phaseroid
         npm install
 
