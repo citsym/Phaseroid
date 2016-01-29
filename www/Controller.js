@@ -27,7 +27,7 @@ controller_state.main.prototype = new function(){
 		if (!id)
 			id = game.rnd.integerInRange(0, 1000);
 				
-		gameClient.connect("phaser-citsym.c9.io", 8081, id, self.clientConnected);
+		gameClient.connect("localhost", 8081, id, self.clientConnected);
 		
 	
 	

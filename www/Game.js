@@ -75,7 +75,7 @@ game_state.main.prototype = new function(){
 			
 			//Note the port, it is one bigger for the screens!
 				
-			gameClient.connect("phaser-citsym.c9.io", 8082, id, self.clientConnected);	
+			gameClient.connect("localhost", 8082, id, self.clientConnected);	
 			
 			
 	    
