@@ -10,21 +10,21 @@ Prequisities
 Installing
 ----------
 Checkout the code from Github:
-> git clone https://github.com/citsym/Phaseroid
+        git clone https://github.com/citsym/Phaseroid
 
 Install dependencies with npm
->   cd Phaseroid
->   npm install
-> 
->   cd spaceifyapplication
->   npm install
-> 
->   cd api
->   npm install
+        cd Phaseroid
+        npm install
+
+        cd spaceifyapplication
+        npm install
+
+        cd api
+        npm install
 
 Running
 -------
-> node gameserver.js
+        node gameserver.js
 
 This starts a http server for serving files and websocket communication server.
 
