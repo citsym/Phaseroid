@@ -91,6 +91,7 @@ self.callClientRpc = function(clientId, methodName, params, connectionId, callba
 		}
 	};	
 	
+}
 /*
 self.callServerRpc = function(clientId, methodName, params, connectionId, callback)
 	{
@@ -101,7 +102,7 @@ self.callServerRpc = function(clientId, methodName, params, connectionId, callba
 	
 	};
 
-}
+
 */
 
 
