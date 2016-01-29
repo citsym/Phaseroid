@@ -23,6 +23,7 @@ Install dependencies with npm
 
         cd api
         npm install
+        cd ../..
 
 Running
 -------
@@ -30,8 +31,8 @@ Running
 
 This starts a http server for serving files and websocket communication server.
 
-Big screen is served at: http://localhost:8080/screen.html
+Big screen is served at: [http://localhost:8080/screen.html](http://localhost:8080/screen.html)
 
-Mobile clients area served at: http://localhost:8080/
+Mobile clients area served at: [http://localhost:8080/](http://localhost:8080/)
 
 
