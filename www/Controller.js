@@ -19,14 +19,21 @@ controller_state.main.prototype = new function(){
     
     var button1 = false;
     var button2 = false;
+
+    var gameClient = null;
     
    
     self.preload = function() {
+        /*
         id = getGetParameter("id");
 		if (!id)
 			id = game.rnd.integerInRange(0, 1000);
 				
 		gameClient.connect("localhost", 8081, id, self.clientConnected);
+        */
+
+        gameClient = new GameClient("controller", "owngroup"); 
+        gameClient.connect(SERVER_ADDRESS.host, SERVER_ADDRESS.port);   
 		
     }
     
@@ -91,7 +98,9 @@ controller_state.main.prototype = new function(){
     self.update = function(){
     var input = {X:this.joystick.deltaX, Y:this.joystick.deltaY, button1:button1, button2:button2};
         
-        gameClient.callScreenRpc(1, "setPlayerInput", [id, input],  self, null);
+        //gameClient.callScreenRpc(1, "setPlayerInput", [id, input],  self, null);
+
+        gameClient.notifyScreens("setPlayerInput", [input]);
         
     }
     
@@ -107,6 +116,7 @@ controller_state.main.prototype = new function(){
 		callback(null, [666,667]);
 		};
 		
+    //Doesn't get called from preload, include callback
 	self.clientConnected = function()
 		{
 		

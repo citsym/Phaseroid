@@ -8,50 +8,49 @@
 				
 		var SERVER_ADDRESS = {host: "localhost", port: 19753};
 		var WEBRTC_CONFIG = {"iceServers":[{url:"stun:kandela.tv"},{url :"turn:kandela.tv", username:"webrtcuser", credential:"jeejeejee"}]};
-			
 		/*
-		function TestScreen()
+		function TestController()
 			{
 			var self = this;
 			
-			var gameClient = new GameClient("screen", "owngroup");
+			var gameClient = null;
 			
-			self.onButtonPressed = function(x, y, callerId, connectionId, callback)
-				{
-				console.log("TestSreen::onButtonPressed() x: "+x+" y: "+y+" callerId: "+callerId+" connectionId: "+connectionId);
-				};
-				
 			self.connect = function()
 				{
-				gameClient.exposeRpcMethod( "onButtonPressed", self, self.onButtonPressed);			
+				gameClient = new GameClient("controller", "owngroup"); 
 				gameClient.connect(SERVER_ADDRESS.host, SERVER_ADDRESS.port);	
+				};
+			
+			self.sendButtonPress = function()
+				{
+				console.log("TestController::sendButtonPress()");
+				gameClient.notifyScreens("onButtonPressed",[100,200]);
 				};
 			}
 		
-		var screen = new TestScreen();
+		var controller = new TestController();
 			
 		window.onload = function()
 			{
-			screen.connect();
+			controller.connect();
 			}
 			*/
 				
 		</script>
 		<script src="libs/phaser.min.js"></script>
-		<script src="Glow.js"></script>
-		<script src="prefabs/Player.js"></script>
-		<script src="Game.js"></script>
+		<script src="libs/VirtualJoystick.js"></script>
+		<script src="Controller.js"></script>
 		<title>
-			TestScreen for communicationhub
+			TestController for communicationhub
 		</title>
 	</head>
 <body>
 	<h2>
-		TestScreen for communicationhub
+		Controller 
 	</h2>
 	<h3>
 		Please open the browser console to see what is happening!
 	</h3>
-	<button onclick="testClient.sayHelloToServer();">Say Hello To Server</button>
+	<button onclick="controller.sendButtonPress();">Send button press to Server</button>
 </body>
 </html>

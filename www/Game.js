@@ -63,12 +63,21 @@ game_state.main.prototype = new function(){
     const numberOfEnemies = 8;
     const numberOfCollectables = 16;
 
+    var gameClient;
+
     this.preload = function() {
 		// Function called first to load all the assets
         game.load.image('hello', 'assets/Phaser-Logo-Small.png');
         game.load.image('player', 'assets/diamond.png');
         game.load.image('star', 'assets/star.png');
+
+        gameClient = new GameClient("screen", "owngroup");
          
+
+        //gameClient.exposeRpcMethod( "onButtonPressed", self, self.onButtonPressed);         
+        gameClient.connect(SERVER_ADDRESS.host, SERVER_ADDRESS.port, self.clientConnected);   
+
+        /*
         var id = getGetParameter("id");
 			if (!id)
 				id = 1;
@@ -77,6 +86,7 @@ game_state.main.prototype = new function(){
 				
 			gameClient.connect("localhost", 8082, id, self.clientConnected);	
 			
+        */
 			
 	    
          
@@ -120,90 +130,7 @@ game_state.main.prototype = new function(){
         self.bullets.setAll('anchor.x', 0.5);
         self.bullets.setAll('anchor.y', 0.5);
 
-        /*
-        
-        var bmd = game.add.bitmapData(32,32);
-
-        bmd.ctx.beginPath();
-        bmd.ctx.rect(0,0,32,32);
-        bmd.ctx.fillStyle = '#ff0000';
-        bmd.ctx.fill();
-        
-        var bmd2 = game.add.bitmapData(32,32);
-
-        bmd2.ctx.beginPath();
-        bmd2.ctx.rect(0,0,32,32);
-        bmd2.ctx.fillStyle = '#0000ff';
-        bmd2.ctx.fill();
-    
-        // use the bitmap data as the texture for the sprite
-        
-        
-        
-        enemies = game.add.group();
-        enemies.physicsBodyType = Phaser.Physics.ARCADE;
-        enemies.enableBody = true;
-        
-        self.bullets = game.add.group();
-        self.bullets.enableBody = true;
-        self.bullets.physicsBodyType = Phaser.Physics.ARCADE;
-    
-    
-        var color = 'rgba(255, 0, 0, 1)';
-        var bulletBmd = this.game.make.bitmapData(16, 16);
-        bulletBmd.circle(bulletBmd.width/2, bulletBmd.height/2, 8, color);
-        //  All 40 of them
-        self.bullets.createMultiple(40, bulletBmd);
-        self.bullets.setAll('anchor.x', 0.5);
-        self.bullets.setAll('anchor.y', 0.5);
-        
- 
-        for (var i = 0; i < 8; i++)
-        {
-            //  This creates a new Phaser.Sprite instance within the group
-            //  It will be randomly placed within the world and use the 'baddie' image to display
-            enemies.create(Math.random() * game.width,  Math.random() * game.height, bmd);
-        }
-        
-        enemies.setAll('anchor.x', 0.5);
-        enemies.setAll('anchor.y', 0.5);
-        
-        
-        collectables = game.add.group();
-        collectables.physicsBodyType = Phaser.Physics.ARCADE;
-        collectables.enableBody = true;
-        
-        for (var i = 0; i < 16; i++)
-        {
-            //  This creates a new Phaser.Sprite instance within the group
-            //  It will be randomly placed within the world and use the 'baddie' image to display
-            collectables.create(Math.random() * game.width,  Math.random() * game.height, bmd2);
-            
-        }
-        
-        collectables.setAll('anchor.x', 0.5);
-        collectables.setAll('anchor.y', 0.5);
-        
-        
-        collectables.forEach(function(c){
-            var tween = game.add.tween(c.scale).to( { x: .5, y:.5 }, 1000, "Linear", true, 0, -1);
-
-        //  And this tells it to yoyo, i.e. fade back to zero again before repeating.
-        //  The 3000 tells it to wait for 3 seconds before starting the fade back.
-            tween.yoyo(true, 1000);
-        });
-        
-        */
-        
-        /*
-        var color = 'rgba(0,255, 0, 0.3)';
-        var radius = 80;
-        var circleBmd = this.game.make.bitmapData(radius*2, radius*2);
-        circleBmd.circle(circleBmd.width/2, circleBmd.height/2, radius, color);
-        well  = game.add.sprite(100,100, circleBmd);
-        well.anchor.setTo(0.5, 0.5);
-        game.physics.arcade.enable(well);
-        */
+       
         
     };
 
@@ -299,8 +226,8 @@ game_state.main.prototype = new function(){
     }
     
 
-    self.setPlayerInput = function(id, input) {
-        players[id].setInput(input);
+    self.setPlayerInput = function(input, callerId, connectionId, callback) {
+        players[callerId].setInput(input);
         //console.log(input);
     }
     
@@ -412,7 +339,7 @@ game_state.main.prototype = new function(){
 	self.onControllerConnected = function(id)
 		{
 		console.log("OwnScreen::onControllerConnected() "+id);
-		console.log("Currently connected controllers: " + gameClient.getConnectedClientIds());
+		//console.log("Currently connected controllers: " + gameClient.getConnectedClientIds());
 		
 		players[id] = new Player(game, game.world.width/2, game.world.height/2);
 		
@@ -424,7 +351,7 @@ game_state.main.prototype = new function(){
 	self.onControllerDisconnected = function(id)
 		{
 		console.log("OwnScreen::onControllerDisconnected() "+id);
-		console.log("Currently connected controllers: " + gameClient.getConnectedClientIds());
+		//console.log("Currently connected controllers: " + gameClient.getConnectedClientIds());
 		
 		playerGroup.remove(players[id]);
 		//players[id].kill();
@@ -437,40 +364,45 @@ game_state.main.prototype = new function(){
 	self.onScreenConnected = function(id)
 		{
 		console.log("OwnScreen::onScreenConnected() "+id);
-		console.log("Currently connected screens: " + gameClient.getConnectedScreenIds());
+		//console.log("Currently connected screens: " + gameClient.getConnectedScreenIds());
 		//gameClient.callServerRpc(1, "method", ["hello server"],  self, null);
 		};
 	
 	self.onScreenDisconnected = function(id)
 		{
 		console.log("OwnScreen::onScreenDisconnected() "+id);
-		console.log("Currently connected screens: " + gameClient.getConnectedScreenIds());
+		//console.log("Currently connected screens: " + gameClient.getConnectedScreenIds());
 		};	
 	
 	
 	self.clientConnected = function()
 		{
-		console.log("DemoScreen::screenConnected()");
+		console.log("DemoScreen::screenConnected()"+self);
+
+
 		
-		gameClient.setClientConnectionListener(self, self.onControllerConnected);
-		gameClient.setClientDisconnectionListener(self, self.onControllerDisconnected);
+		gameClient.setControllerConnectionListener(self, self.onControllerConnected);
+		gameClient.setControllerDisconnectionListener(self, self.onControllerDisconnected);
 		gameClient.setScreenConnectionListener(self, self.onScreenConnected);
 		gameClient.setScreenDisconnectionListener(self, self.onScreenDisconnected);
 		
-		gameClient.exposeRpcMethod("sayHi", self, self.sayHi);
-		gameClient.exposeRpcMethod("getGameState", self, self.getGameState);
+		//gameClient.exposeRpcMethod("sayHi", self, self.sayHi);
+		//gameClient.exposeRpcMethod("getGameState", self, self.getGameState);
 		
 		gameClient.exposeRpcMethod("setPlayerInput", self, self.setPlayerInput);
 		
-		gameClient.exposeRpcMethod("setOrientation", self, self.setOrientation);
+		//gameClient.exposeRpcMethod("setOrientation", self, self.setOrientation);
 		
+        /*
 		gameClient.callClientRpc(1, "setStickPosition", [211,100],  self, null);			
 		gameClient.callClientRpc(1, "getStickPosition", [],  self, function(err, data)
 			{
 			console.log("Stick position received: "+data);
 			});
 		
+        */
 		};
+        
     
 };
 
